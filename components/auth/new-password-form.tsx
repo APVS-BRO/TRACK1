@@ -61,7 +61,7 @@ const token = searchParams.get("token");
   };
   return (
     <>
-        <div className="h-full flex items-center justify-center bg-[radial-gradient(ellipse_at_top,var(--tw-gradient-stops))] from-black via-gray-900 to-gray-600">
+      <div className="h-full flex items-center justify-center  bg-gradient-to-br from-gray-800 to-gray-900 bg-[length:100%_100%] animate-scaleBackground">
     <CardWrapper
       headerLabel="Enter your new password"
       backButtonLabel="Back to login"

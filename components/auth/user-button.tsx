@@ -12,11 +12,12 @@ export const UserButton = () =>{
     return (
       <DropdownMenu>
       <DropdownMenuTrigger>
-        <Avatar  className="">
-            <AvatarImage src={user?.image || ""}/> 
+        <Avatar  className="flex items-center gap-3 justify-start">
+            <AvatarImage src={user?.image || ""} className="max-w-8 max-h-8"/> 
             <AvatarFallback className="bg-sky-500">
-            <FaUser className="bg-slate-50" />
+            <FaUser className="bg-slate-50 p-2 rounded-full" />
             </AvatarFallback>
+            <h3 className="font-semibold">{user?.name}</h3>
           
             
         </Avatar>

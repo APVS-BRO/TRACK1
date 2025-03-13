@@ -12,7 +12,7 @@ const font = Poppins({
 export const ErrorCard =()=>{
 
     return(
-         <main className="flex h-full flex-col items-center justify-center bg-[radial-gradient(ellipse_at_top,var(--tw-gradient-stops))] from-black via-gray-900 to-gray-600">
+      <main className="flex h-full flex-col items-center justify-center  bg-gradient-to-br from-gray-800 to-gray-900 bg-[length:100%_100%] animate-scaleBackground">
               <div className="space-y-6 text-center">
                 <h1 className={cn("flex items-center justify-center gap-2 text-6xl font-semibold text-white drop-shadow-md", font.className)}></h1>
        <CardWrapper 
