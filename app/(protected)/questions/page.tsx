@@ -105,18 +105,18 @@ export default function Page() {
 
             <div className='fixed bottom-8 right-8 flex flex-col items-end gap-2'>
                 {attempted && !isAllAnswered() && (
-                    <div className='text-yellow-500 font-medium text-sm'>
-                        Please answer all questions before submitting
+                    <div className="bg-orange-500/90 text-white px-4 py-2 rounded-xl font-medium animate-in slide-in-from-bottom-4">
+                       Please answer all questions
                     </div>
                 )}
                 {showPasteWarning && (
-                    <div className="bg-red-500/90 text-black px-4 py-3 rounded-lg font-medium animate-in slide-in-from-bottom-4">
+                    <div className="bg-red-500/90 text-white px-4 py-2 rounded-xl font-medium animate-in slide-in-from-bottom-4">
                         Pasting is not allowed!
                     </div>
                 )}
                 <button
                     onClick={handleSubmitAll}
-                    className={`text-[#1D2735] bg-white/90 font-bold py-3 px-7 rounded-full transform transition-all duration-200 border-2 ${isAllAnswered() ? 'hover:scale-105 border-transparent' : 'bg-white/20 backdrop-blur-lg text-white border-white cursor-not-allowed'}`}
+                    className={`text-[#1D2735] font-bold py-3 px-7 rounded-full transform transition-all duration-200 border-2 ${isAllAnswered() ? 'bg-white/90 hover:scale-105 border-transparent' : 'bg-white/20 backdrop-blur-lg text-white border-white cursor-not-allowed'}`}
                 >
                     Submit All Answers
                 </button>
