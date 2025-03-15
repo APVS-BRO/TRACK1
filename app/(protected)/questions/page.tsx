@@ -48,7 +48,7 @@ export default function Page() {
     useEffect(() => {
         sessionStorage.setItem('tabSwitch', String(tabSwitchCount));
         if (tabSwitchCount >= 10) {
-            logout("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+            // logout("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
             router.push("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
         }
     }, [tabSwitchCount]);
@@ -219,12 +219,15 @@ export default function Page() {
                         }
                     </div>
                 )}
-                <button
-                    onClick={handleSubmitAll}
-                    className={`text-[#1D2735] font-bold py-3 px-7 rounded-full transform transition-all duration-200 border-2 ${isAllAnswered() ? 'bg-white/90 hover:scale-105 border-transparent' : 'bg-white/20 backdrop-blur-lg text-white border-white cursor-not-allowed'}`}
-                >
-                    Submit All Answers
-                </button>
+                <div className='flex flex-row items-center justify-center gap-4'>
+                    <div className='bg-red-700 rounded-full aspect-square text-white font-semibold h-12 flex items-center justify-center w-12 text-xl'>{tabSwitchCount}</div>
+                    <button
+                        onClick={handleSubmitAll}
+                        className={`text-[#1D2735] font-bold py-3 px-7 rounded-full transform transition-all duration-200 border-2 ${isAllAnswered() ? 'bg-white/90 hover:scale-105 border-transparent' : 'bg-white/20 backdrop-blur-lg text-white border-white cursor-not-allowed'}`}
+                    >
+                        Submit All Answers
+                    </button>
+                </div>
             </div>
         </div>
     );
