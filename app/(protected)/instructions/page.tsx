@@ -6,7 +6,7 @@ const InstructionPage = () => {
   const router = useRouter();
 
   return (
-    <div className='flex flex-col h-full w-full pl-[20vw] px-24 py-16 overflow-auto text-white space-y-8'>
+    <div className='flex flex-col h-full max-w-screen-xl w-full pl-[20vw] px-24 py-16 overflow-auto text-white space-y-8'>
       <div>
         <h2 className="text-4xl font-semibold mb-1">Instructions</h2>
         <p className='text-sm opacity-70 mb-6'>Welcome to the online test. Please read the instructions carefully before proceeding.</p>

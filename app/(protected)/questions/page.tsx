@@ -40,7 +40,7 @@ export default function Page() {
     };
 
     return (
-        <div className='flex flex-col h-full w-full pl-[20vw] px-24 py-16 overflow-auto'>
+        <div className='flex flex-col h-full max-w-screen-xl w-full pl-[20vw] px-24 py-16 overflow-auto'>
 
             <h1 className='text-3xl font-semibold text-white'>Questions</h1>
             <div className='space-y-8 mt-6'>
