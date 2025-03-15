@@ -2,7 +2,7 @@ import Image from 'next/image'
 import React from 'react'
 import authlogo from '@/public/authlogo.png';
 import Link from 'next/link';
-import { BsGearFill, BsPersonFill } from 'react-icons/bs';
+import { BsGearFill, BsInfoCircleFill, BsPersonFill } from 'react-icons/bs';
 import { UserButton } from '@/components/auth/user-button';
 import { BiQuestionMark } from 'react-icons/bi';
 
@@ -18,16 +18,17 @@ export default function layout({ children }:
                         <Image src={authlogo} width={40} height={40} alt="auth_logo" className="w-[40px] h-[40px]" />
                         <h1 className='text-xl font-semibold'>APVS</h1>
                     </div>
+                    <Link href='/instructions' className='flex items-center gap-2 rounded-lg font-medium hover:bg-white/20 px-4 py-2'>
+                        <BsInfoCircleFill className='text-lg' /> Instructions
+                    </Link>
                     <Link href='/questions' className='flex items-center gap-2 rounded-lg font-medium hover:bg-white/20 px-4 py-2'>
                         <BiQuestionMark className='text-lg' /> Questions
                     </Link>
                     <Link href='/profile' className='flex items-center gap-2 rounded-lg font-medium hover:bg-white/20 px-4 py-2'>
                         <BsPersonFill className='text-lg' /> Profile
                     </Link>
-                    <Link href='/settings' className='flex items-center gap-2 rounded-lg font-medium hover:bg-white/20 px-4 py-2'>
-                        <BsGearFill className='text-lg' /> Settings
-                    </Link>
-                    
+
+
                 </div>
                 <UserButton />
             </nav>
