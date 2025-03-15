@@ -6,6 +6,7 @@ import DisableDevtool from 'disable-devtool';
 import { Timer } from '@/components/Timer';
 import { logout } from '@/actions/logout';
 import { useRouter } from 'next/navigation';
+import KeystrokeAnalytics from '@/components/Keystroke';
 
 export default function Page() {
     const router = useRouter()
@@ -193,31 +194,8 @@ export default function Page() {
                             </div>
                         ) : (
                             <div>
-                                <textarea
-                                    className={`${showResults ? (results[question.id] ? 'border-green-500' : 'border-red-500') : "border-transparent"} border-2 w-full bg-gray-700 p-2 rounded-lg px-4 text-white`}
-                                    rows={4}
-                                    disabled={showResults}
-                                    value={answers[question.id] || ''}
-                                    onChange={(e) => setAnswers(prev => ({ ...prev, [question.id]: e.target.value }))}
-                                    onPaste={(e) => {
-                                        e.preventDefault();
-                                        handlePasteAttempt();
-                                    }}
-                                    onDrop={(e) => {
-                                        e.preventDefault();
-                                        handlePasteAttempt();
-                                    }}
-                                    onKeyDown={(e) => {
-                                        if (e.ctrlKey || e.metaKey) {
-                                            if (e.key === 'v') {
-                                                e.preventDefault();
-                                                handlePasteAttempt();
-                                            }
-                                        }
-                                    }}
-                                    onCopy={(e) => e.preventDefault()}
-                                    onCut={(e) => e.preventDefault()}
-                                />
+                                
+                                <KeystrokeAnalytics results={results} setAnswers={setAnswers} showResults={showResults} question={question} answers={answers} handlePasteAttempt={handlePasteAttempt}/>
                             </div>
                         )}
                     </div>
@@ -259,6 +237,7 @@ export default function Page() {
 
             <button
                 onClick={enterFullscreen}
+                id="fffsss"
                 className='bg-blue-400/20 text-white rounded-full px-5 py-2 font-medium'
             >
                 Enter Fullscreen

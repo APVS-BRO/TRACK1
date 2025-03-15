@@ -1,5 +1,13 @@
-'use client';
-import { useState, useEffect, useRef, useCallback } from 'react';
+"use client";
+import { Question } from "@/data/questions";
+import {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  Dispatch,
+  SetStateAction,
+} from "react";
 
 type KeystrokeMetrics = {
   key: string;
@@ -16,13 +24,31 @@ type Analytics = {
   isHuman: boolean;
 };
 
-export default function KeystrokeAnalytics() {
+type Answers = {
+  [key: string]: string;
+};
+
+export default function KeystrokeAnalytics({
+  showResults,
+  results,
+  question,
+  answers,
+  setAnswers,
+  handlePasteAttempt,
+}: {
+  showResults: boolean;
+  results: { [key: number]: boolean };
+  question: Question;
+  answers: Answers;
+  setAnswers: Dispatch<SetStateAction<{ [key: number]: string }>>;
+  handlePasteAttempt: () => void;
+}) {
   const [metrics, setMetrics] = useState<KeystrokeMetrics[]>([]);
   const [analytics, setAnalytics] = useState<Analytics>({
     totalKeys: 0,
     humanConfidence: 0,
     anomalyCount: 0,
-    isHuman: false,
+    isHuman: true,
   });
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -33,14 +59,19 @@ export default function KeystrokeAnalytics() {
     if (sequenceBuffer.current.length < 10) return;
 
     // Extract relevant metrics
-    const latencies = sequenceBuffer.current.map(m => m.latency);
-    const flightTimes = sequenceBuffer.current.map(m => m.flightTime);
-    const backspaceCount = sequenceBuffer.current.filter(m => m.key === 'Backspace').length;
+    const latencies = sequenceBuffer.current.map((m) => m.latency);
+    const flightTimes = sequenceBuffer.current.map((m) => m.flightTime);
+    const backspaceCount = sequenceBuffer.current.filter(
+      (m) => m.key === "Backspace"
+    ).length;
 
     // Detect anomalies: Latency and flight time thresholds
-    const anomalyCount = sequenceBuffer.current.filter(m =>
-      m.latency < 20 || m.latency > 500 || // Latency anomalies
-      m.flightTime < 15 || m.flightTime > 1000 // Flight time anomalies
+    const anomalyCount = sequenceBuffer.current.filter(
+      (m) =>
+        m.latency < 20 ||
+        m.latency > 500 || // Latency anomalies
+        m.flightTime < 15 ||
+        m.flightTime > 1000 // Flight time anomalies
     ).length;
 
     // Scoring System for Confidence
@@ -63,7 +94,9 @@ export default function KeystrokeAnalytics() {
   const calculateStdDeviation = (data: number[]): number => {
     if (data.length < 2) return 0;
     const mean = data.reduce((sum, value) => sum + value, 0) / data.length;
-    const variance = data.reduce((sum, value) => sum + Math.pow(value - mean, 2), 0) / data.length;
+    const variance =
+      data.reduce((sum, value) => sum + Math.pow(value - mean, 2), 0) /
+      data.length;
     return Math.sqrt(variance);
   };
 
@@ -77,9 +110,11 @@ export default function KeystrokeAnalytics() {
 
       const now = performance.now();
       const latency = now - lastKeyUpTime.current;
-      const flightTime = sequenceBuffer.current.length > 0
-        ? now - sequenceBuffer.current[sequenceBuffer.current.length - 1].keyUpTime
-        : 0;
+      const flightTime =
+        sequenceBuffer.current.length > 0
+          ? now -
+            sequenceBuffer.current[sequenceBuffer.current.length - 1].keyUpTime
+          : 0;
 
       const newMetric: KeystrokeMetrics = {
         key: e.key,
@@ -89,18 +124,21 @@ export default function KeystrokeAnalytics() {
         flightTime,
       };
 
-      setMetrics(prev => [...prev, newMetric]);
-      sequenceBuffer.current = [...sequenceBuffer.current.slice(-50), newMetric];
+      setMetrics((prev) => [...prev, newMetric]);
+      sequenceBuffer.current = [
+        ...sequenceBuffer.current.slice(-50),
+        newMetric,
+      ];
       lastKeyUpTime.current = now;
     };
 
     const textarea = textareaRef.current;
-    textarea?.addEventListener('keydown', handleKeyDown);
-    textarea?.addEventListener('keyup', handleKeyUp);
+    textarea?.addEventListener("keydown", handleKeyDown);
+    textarea?.addEventListener("keyup", handleKeyUp);
 
     return () => {
-      textarea?.removeEventListener('keydown', handleKeyDown);
-      textarea?.removeEventListener('keyup', handleKeyUp);
+      textarea?.removeEventListener("keydown", handleKeyDown);
+      textarea?.removeEventListener("keyup", handleKeyUp);
     };
   }, []);
 
@@ -110,32 +148,45 @@ export default function KeystrokeAnalytics() {
   }, [analyzeTypingPatterns]);
 
   return (
-    <div className="analytics-container">
-      <h3>Enhanced Typing Behavior Analysis</h3>
+    <>
       <textarea
-        ref={textareaRef}
-        placeholder="Type your message here..."
-        rows={6}
-        className="message-textarea"
+        className={`${
+          showResults
+            ? results[question.id]
+              ? "border-green-500"
+              : "border-red-500"
+            : "border-transparent"
+        } border-2 w-full bg-gray-700 p-2 rounded-lg px-4 text-white`}
+        rows={4}
+        disabled={showResults}
+        value={answers[question.id] || ""}
+        onChange={(e) =>
+          setAnswers((prev) => ({ ...prev, [question.id]: e.target.value }))
+        }
+        onPaste={(e) => {
+          e.preventDefault();
+          handlePasteAttempt();
+        }}
+        onDrop={(e) => {
+          e.preventDefault();
+          handlePasteAttempt();
+        }}
+        onKeyDown={(e) => {
+          if (e.ctrlKey || e.metaKey) {
+            if (e.key === "v") {
+              e.preventDefault();
+              handlePasteAttempt();
+            }
+          }
+        }}
+        onCopy={(e) => e.preventDefault()}
+        onCut={(e) => e.preventDefault()}
       />
-      <div className="metrics-grid">
-        <div className="metric">
-          <span>Keystrokes:</span>
-          <span>{analytics.totalKeys}</span>
-        </div>
-        <div className="metric">
-          <span>Human Confidence:</span>
-          <span>{analytics.humanConfidence.toFixed(1)}%</span>
-        </div>
-        <div className="metric">
-          <span>Anomalies:</span>
-          <span>{analytics.anomalyCount}</span>
-        </div>
-        <div className="metric">
-          <span>Is Human:</span>
-          <span>{analytics.isHuman ? '✅' : '❌'}</span>
-        </div>
-      </div>
-    </div>
+      {!analytics.isHuman && (
+        <p className="text-sm text-white opacity-60 font-medium">
+          Bot detected 🤖❌
+        </p>
+      )}
+    </>
   );
 }

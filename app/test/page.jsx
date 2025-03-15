@@ -2,7 +2,7 @@
 // pages/index.js or app/page.js (depending on your Next.js version)
 import { useEffect, useState } from 'react';
 import MouseMovementAnalyzer from '../../components/MouseTracker';
-import KeystrokeAnalytics from '@/components/Keystroke';
+import KeystrokeAnalytics from '@/components/Keystroke2';
 
 export default function Home() {
   const [validMovement, setValidMovement] = useState(true);
