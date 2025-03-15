@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { questions } from '@/data/questions';
 import { calculateSimilarity } from '@/utils/similarity';
 
@@ -8,6 +8,12 @@ export default function Page() {
     const [results, setResults] = useState<{ [key: number]: boolean }>({});
     const [showResults, setShowResults] = useState(false);
     const [attempted, setAttempted] = useState(false);
+    const [showPasteWarning, setShowPasteWarning] = useState(false);
+
+    const handlePasteAttempt = useCallback(() => {
+        setShowPasteWarning(true);
+        setTimeout(() => setShowPasteWarning(false), 3000);
+    }, []);
 
     const isAllAnswered = () => {
         return questions.every(question => answers[question.id]?.trim());
@@ -35,11 +41,12 @@ export default function Page() {
 
     return (
         <div className='flex flex-col h-full w-full pl-[20vw] px-24 py-16 overflow-auto'>
+
             <h1 className='text-3xl font-semibold text-white'>Questions</h1>
             <div className='space-y-8 mt-6'>
                 {questions.map(question => (
                     <div key={question.id} className={`p-6 rounded-lg`}>
-                        <p className='text-white mb-4 font-medium text-lg'>{question.question}</p>
+                        <p className='text-white mb-4 font-medium text-lg select-none'>{question.question}</p>
                         {question.type === 'mcq' ? (
                             <div className='space-y-2 border-l border-white/30 pl-2 ml-2'>
                                 {question.options?.map(option => (
@@ -61,6 +68,24 @@ export default function Page() {
                                     disabled={showResults}
                                     value={answers[question.id] || ''}
                                     onChange={(e) => setAnswers(prev => ({ ...prev, [question.id]: e.target.value }))}
+                                    onPaste={(e) => {
+                                        e.preventDefault();
+                                        handlePasteAttempt();
+                                    }}
+                                    onDrop={(e) => {
+                                        e.preventDefault();
+                                        handlePasteAttempt();
+                                    }}
+                                    onKeyDown={(e) => {
+                                        if (e.ctrlKey || e.metaKey) {
+                                            if (e.key === 'v') {
+                                                e.preventDefault();
+                                                handlePasteAttempt();
+                                            }
+                                        }
+                                    }}
+                                    onCopy={(e) => e.preventDefault()}
+                                    onCut={(e) => e.preventDefault()}
                                 />
                             </div>
                         )}
@@ -80,13 +105,18 @@ export default function Page() {
 
             <div className='fixed bottom-8 right-8 flex flex-col items-end gap-2'>
                 {attempted && !isAllAnswered() && (
-                    <div className='text-yellow-500 font-medium text-sm'>
-                        Please answer all questions before submitting
+                    <div className="bg-orange-500/90 text-white px-4 py-2 rounded-xl font-medium animate-in slide-in-from-bottom-4">
+                       Please answer all questions
+                    </div>
+                )}
+                {showPasteWarning && (
+                    <div className="bg-red-500/90 text-white px-4 py-2 rounded-xl font-medium animate-in slide-in-from-bottom-4">
+                        Pasting is not allowed!
                     </div>
                 )}
                 <button
                     onClick={handleSubmitAll}
-                    className={`text-[#1D2735] bg-white/90 font-bold py-3 px-7 rounded-full transform transition-all duration-200 border-2 ${isAllAnswered() ? 'hover:scale-105 border-transparent' : 'bg-white/20 backdrop-blur-lg text-white border-white cursor-not-allowed'}`}
+                    className={`text-[#1D2735] font-bold py-3 px-7 rounded-full transform transition-all duration-200 border-2 ${isAllAnswered() ? 'bg-white/90 hover:scale-105 border-transparent' : 'bg-white/20 backdrop-blur-lg text-white border-white cursor-not-allowed'}`}
                 >
                     Submit All Answers
                 </button>
