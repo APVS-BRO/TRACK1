@@ -7,8 +7,17 @@ export default function Page() {
     const [answers, setAnswers] = useState<{ [key: number]: string }>({});
     const [results, setResults] = useState<{ [key: number]: boolean }>({});
     const [showResults, setShowResults] = useState(false);
+    const [attempted, setAttempted] = useState(false);
+
+    const isAllAnswered = () => {
+        return questions.every(question => answers[question.id]?.trim());
+    };
 
     const handleSubmitAll = () => {
+        if (!isAllAnswered()) {
+            setAttempted(true);
+            return;
+        }
         const newResults = {};
         questions.forEach(question => {
             const answer = answers[question.id] || '';
@@ -29,7 +38,7 @@ export default function Page() {
             <h1 className='text-3xl font-semibold text-white'>Questions</h1>
             <div className='space-y-8 mt-6'>
                 {questions.map(question => (
-                    <div key={question.id} className='p-6 rounded-lg'>
+                    <div key={question.id} className={`p-6 rounded-lg`}>
                         <p className='text-white mb-4 font-medium text-lg'>{question.question}</p>
                         {question.type === 'mcq' ? (
                             <div className='space-y-2 border-l border-white/30 pl-2 ml-2'>
@@ -69,10 +78,15 @@ export default function Page() {
                 ))}
             </div>
 
-            <div className='fixed bottom-8 right-8'>
+            <div className='fixed bottom-8 right-8 flex flex-col items-end gap-2'>
+                {attempted && !isAllAnswered() && (
+                    <div className='text-yellow-500 font-medium text-sm'>
+                        Please answer all questions before submitting
+                    </div>
+                )}
                 <button
                     onClick={handleSubmitAll}
-                    className='text-[#1D2735]  bg-white/90 font-bold py-3 px-7 rounded-full transform transition-all duration-200 hover:scale-105'
+                    className={`text-[#1D2735] bg-white/90 font-bold py-3 px-7 rounded-full transform transition-all duration-200 border-2 ${isAllAnswered() ? 'hover:scale-105 border-transparent' : 'bg-white/20 backdrop-blur-lg text-white border-white cursor-not-allowed'}`}
                 >
                     Submit All Answers
                 </button>
