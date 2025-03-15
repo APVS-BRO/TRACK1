@@ -1,7 +1,8 @@
 'use client';
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { questions } from '@/data/questions';
 import { calculateSimilarity } from '@/utils/similarity';
+import DisableDevtool from 'disable-devtool';
 
 export default function Page() {
     const [answers, setAnswers] = useState<{ [key: number]: string }>({});
@@ -9,10 +10,54 @@ export default function Page() {
     const [showResults, setShowResults] = useState(false);
     const [attempted, setAttempted] = useState(false);
     const [showPasteWarning, setShowPasteWarning] = useState(false);
+    const [showDevToolsWarning, setShowDevToolsWarning] = useState(false);
 
     const handlePasteAttempt = useCallback(() => {
         setShowPasteWarning(true);
         setTimeout(() => setShowPasteWarning(false), 3000);
+    }, []);
+
+    useEffect(() => {
+        DisableDevtool();
+
+        const handleDevTools = () => {
+            setShowDevToolsWarning(true);
+            setTimeout(() => setShowDevToolsWarning(false), 3000);
+        };
+
+        const handleContextMenu = (e: Event) => {
+            e.preventDefault();
+            handleDevTools();
+        };
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (
+                (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
+                (e.metaKey && e.altKey && e.key === 'I') ||
+                e.key === 'F12'
+            ) {
+                e.preventDefault();
+                handleDevTools();
+            }
+        };
+
+        const detectDevTools = () => {
+            if (window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160) {
+                handleDevTools();
+            }
+        };
+
+        document.addEventListener('contextmenu', handleContextMenu);
+        document.addEventListener('keydown', handleKeyDown);
+        window.addEventListener('resize', detectDevTools);
+
+        setInterval(detectDevTools, 1000);
+
+        return () => {
+            document.removeEventListener('contextmenu', handleContextMenu);
+            document.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener('resize', detectDevTools);
+        };
     }, []);
 
     const isAllAnswered = () => {
@@ -106,12 +151,17 @@ export default function Page() {
             <div className='fixed bottom-8 right-8 flex flex-col items-end gap-2'>
                 {attempted && !isAllAnswered() && (
                     <div className="bg-orange-500/90 text-white px-4 py-2 rounded-xl font-medium animate-in slide-in-from-bottom-4">
-                       Please answer all questions
+                        Please answer all questions
                     </div>
                 )}
                 {showPasteWarning && (
                     <div className="bg-red-500/90 text-white px-4 py-2 rounded-xl font-medium animate-in slide-in-from-bottom-4">
                         Pasting is not allowed!
+                    </div>
+                )}
+                {showDevToolsWarning && (
+                    <div className="bg-red-500/90 text-white px-4 py-2 rounded-xl font-medium animate-in slide-in-from-bottom-4">
+                        Developer tools are not allowed!
                     </div>
                 )}
                 <button
