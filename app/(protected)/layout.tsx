@@ -24,7 +24,7 @@ export default function layout({ children }:
                     <Link href='/questions' className='flex items-center gap-2 rounded-lg font-medium hover:bg-white/20 px-4 py-2'>
                         <BiQuestionMark className='text-lg' /> Questions
                     </Link>
-                    <Link href='/profile' className='flex items-center gap-2 rounded-lg font-medium hover:bg-white/20 px-4 py-2'>
+                    <Link href='/Profile' className='flex items-center gap-2 rounded-lg font-medium hover:bg-white/20 px-4 py-2'>
                         <BsPersonFill className='text-lg' /> Profile
                     </Link>
 
