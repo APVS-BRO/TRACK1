@@ -61,6 +61,15 @@ export default function Page() {
                                     disabled={showResults}
                                     value={answers[question.id] || ''}
                                     onChange={(e) => setAnswers(prev => ({ ...prev, [question.id]: e.target.value }))}
+                                    onPaste={(e) => e.preventDefault()}
+                                    onDrop={(e) => e.preventDefault()}
+                                    onKeyDown={(e) => {
+                                        if (e.ctrlKey || e.metaKey) {
+                                            if (e.key === 'v') e.preventDefault();
+                                        }
+                                    }}
+                                    onCopy={(e) => e.preventDefault()}
+                                    onCut={(e) => e.preventDefault()}
                                 />
                             </div>
                         )}
