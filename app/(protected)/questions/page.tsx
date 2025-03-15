@@ -4,8 +4,11 @@ import { questions } from '@/data/questions';
 import { calculateSimilarity } from '@/utils/similarity';
 import DisableDevtool from 'disable-devtool';
 import { Timer } from '@/components/Timer';
+import { logout } from '@/actions/logout';
+import { useRouter } from 'next/navigation';
 
 export default function Page() {
+    const router = useRouter()
     const [answers, setAnswers] = useState<{ [key: number]: string }>({});
     const [results, setResults] = useState<{ [key: number]: boolean }>({});
     const [showResults, setShowResults] = useState(false);
@@ -44,6 +47,10 @@ export default function Page() {
 
     useEffect(() => {
         sessionStorage.setItem('tabSwitch', String(tabSwitchCount));
+        if (tabSwitchCount >= 10) {
+            logout("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+            router.push("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+        }
     }, [tabSwitchCount]);
 
 

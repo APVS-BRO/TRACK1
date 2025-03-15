@@ -19,7 +19,7 @@ export const Header = ({ label }: HeaderProps) => {
             <div className="flex items-center gap-2">
                 <Image src={authlogo} width={40} height={40} alt="auth_logo" className="w-[40px] h-[40px]" />
                 <h1 className={cn("text-[24px] font-semibold leading-tight", font.className)}>
-                    APVS LOGIN
+                    Proctor Login
                 </h1>
             </div>
             <p className="text-muted-foreground text-sm text-[14px] leading-none">
