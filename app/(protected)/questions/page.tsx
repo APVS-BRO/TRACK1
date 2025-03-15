@@ -42,6 +42,9 @@ export default function Page() {
 
     const handleVerificationFailed = useCallback(() => {
         setShowVerificationWarning(true);
+        setTabSwitchCount(prev => prev + 3);
+        const shuffled = [...questions].sort(() => Math.random() - 0.5);
+        setRandomizedQuestions(shuffled);
         setTimeout(() => setShowVerificationWarning(false), 3000);
     }, []);
 
