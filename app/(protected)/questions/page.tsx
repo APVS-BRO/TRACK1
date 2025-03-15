@@ -9,167 +9,172 @@ import { useRouter } from 'next/navigation';
 import KeystrokeAnalytics from '@/components/Keystroke';
 
 export default function Page() {
-    const router = useRouter()
-    const [answers, setAnswers] = useState<{ [key: number]: string }>({});
-    const [results, setResults] = useState<{ [key: number]: boolean }>({});
-    const [showResults, setShowResults] = useState(false);
-    const [attempted, setAttempted] = useState(false);
-    const [showPasteWarning, setShowPasteWarning] = useState(false);
-    const [showDevToolsWarning, setShowDevToolsWarning] = useState(false);
-    const [showTabSwitchWarning, setShowTabSwitchWarning] = useState(false);
-    const [tabSwitchCount, setTabSwitchCount] = useState(0);
-    const [showVerificationWarning, setShowVerificationWarning] = useState(false);
-    const [randomizedQuestions, setRandomizedQuestions] = useState(questions);
-    const [mounted, setMounted] = useState(false);
-    const [pasteCount, setPasteCount] = useState(0);
+  const router = useRouter();
+  const [answers, setAnswers] = useState<{ [key: number]: string }>({});
+  const [results, setResults] = useState<{ [key: number]: boolean }>({});
+  const [showResults, setShowResults] = useState(false);
+  const [attempted, setAttempted] = useState(false);
+  const [showPasteWarning, setShowPasteWarning] = useState(false);
+  const [showDevToolsWarning, setShowDevToolsWarning] = useState(false);
+  const [showTabSwitchWarning, setShowTabSwitchWarning] = useState(false);
+  const [tabSwitchCount, setTabSwitchCount] = useState(0);
+  const [showVerificationWarning, setShowVerificationWarning] = useState(false);
+  const [randomizedQuestions, setRandomizedQuestions] = useState(questions);
+  const [mounted, setMounted] = useState(false);
+  const [pasteCount, setPasteCount] = useState(0);
 
-    const handlePasteAttempt = useCallback(() => {
-        setPasteCount(prev => {
-            const newCount = prev + 1;
-            if (newCount >= 3) {
-                setShowPasteWarning(true);
-                setTimeout(() => {
-                    setShowPasteWarning(false);
-                    setPasteCount(0);
-                    setTabSwitchCount(prev => prev + 1);
-                }, 3000);
-                return 0;
-            }
-            setShowPasteWarning(true);
-            setTimeout(() => setShowPasteWarning(false), 3000);
-            return newCount;
-        });
-    }, []);
+  const handlePasteAttempt = useCallback(() => {
+    setPasteCount((prev) => {
+      const newCount = prev + 1;
+      if (newCount >= 3) {
+        setShowPasteWarning(true);
+        setTimeout(() => {
+          setShowPasteWarning(false);
+          setPasteCount(0);
+          setTabSwitchCount((prev) => prev + 1);
+        }, 3000);
+        return 0;
+      }
+      setShowPasteWarning(true);
+      setTimeout(() => setShowPasteWarning(false), 3000);
+      return newCount;
+    });
+  }, []);
 
-    const handleVerificationFailed = useCallback(() => {
-        setShowVerificationWarning(true);
-        setTabSwitchCount(prev => prev + 3);
-        const shuffled = [...questions].sort(() => Math.random() - 0.5);
-        setRandomizedQuestions(shuffled);
-        setTimeout(() => setShowVerificationWarning(false), 3000);
-    }, []);
+  const handleVerificationFailed = useCallback(() => {
+    setShowVerificationWarning(true);
+    setTabSwitchCount((prev) => prev + 3);
+    const shuffled = [...questions].sort(() => Math.random() - 0.5);
+    setRandomizedQuestions(shuffled);
+    setTimeout(() => setShowVerificationWarning(false), 3000);
+  }, []);
 
-    const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
-    useEffect(() => {
-        const handleFullscreenChange = () => {
-            setIsFullscreen(!!document.fullscreenElement);
-        };
-
-        document.addEventListener('fullscreenchange', handleFullscreenChange);
-        return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
-    }, []);
-
-    const enterFullscreen = async () => {
-        try {
-            await document.documentElement.requestFullscreen();
-        } catch (err) {
-            console.error('Error attempting to enable fullscreen:', err);
-        }
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
     };
 
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () =>
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
 
-    useEffect(() => {
-        sessionStorage.setItem('tabSwitch', String(tabSwitchCount));
-        if (tabSwitchCount >= 10) {
-            // logout("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
-            router.push("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
-        }
-    }, [tabSwitchCount]);
+  const enterFullscreen = async () => {
+    try {
+      await document.documentElement.requestFullscreen();
+    } catch (err) {
+      console.error("Error attempting to enable fullscreen:", err);
+    }
+  };
 
+  useEffect(() => {
+    sessionStorage.setItem("tabSwitch", String(tabSwitchCount));
+    if (tabSwitchCount >= 10) {
+      // logout("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+      router.push("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+    }
+  }, [tabSwitchCount]);
 
-    useEffect(() => {
-        const t = sessionStorage.getItem("tabSwitch")
-        if (t) setTabSwitchCount(t ? parseInt(t) : 0)
+  useEffect(() => {
+    const t = sessionStorage.getItem("tabSwitch");
+    if (t) setTabSwitchCount(t ? parseInt(t) : 0);
 
-        const shuffled = [...questions].sort(() => Math.random() - 0.5);
-        setRandomizedQuestions(shuffled);
+    const shuffled = [...questions].sort(() => Math.random() - 0.5);
+    setRandomizedQuestions(shuffled);
 
-        DisableDevtool();
-        setMounted(true);
+    DisableDevtool();
+    setMounted(true);
 
-        const handleDevTools = () => {
-            setShowDevToolsWarning(true);
-            setTimeout(() => setShowDevToolsWarning(false), 3000);
-        };
-
-        const handleContextMenu = (e: Event) => {
-            e.preventDefault();
-            handleDevTools();
-        };
-
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (
-                (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
-                (e.metaKey && e.altKey && e.key === 'I') ||
-                e.key === 'F12'
-            ) {
-                e.preventDefault();
-                handleDevTools();
-            }
-
-        };
-
-
-        const handlePaste = (e: ClipboardEvent) => {
-            e.preventDefault();
-            setPasteCount(prev => prev + 1);
-        };
-
-
-        const detectDevTools = () => {
-            if (window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160) {
-                handleDevTools();
-            }
-        };
-
-        const handleVisibilityChange = () => {
-            if (document.hidden) {
-                setTabSwitchCount(prev => prev + 2);
-                setShowTabSwitchWarning(true);
-                setTimeout(() => setShowTabSwitchWarning(false), 3000);
-            }
-        };
-
-        document.addEventListener('paste', handlePaste);
-        document.addEventListener('contextmenu', handleContextMenu);
-        document.addEventListener('keydown', handleKeyDown);
-        window.addEventListener('resize', detectDevTools);
-        document.addEventListener('visibilitychange', handleVisibilityChange);
-
-        setInterval(detectDevTools, 1000);
-
-        return () => {
-            document.removeEventListener('contextmenu', handleContextMenu);
-            document.removeEventListener('keydown', handleKeyDown);
-            window.removeEventListener('resize', detectDevTools);
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
-        };
-    }, []);
-
-    const isAllAnswered = () => {
-        return randomizedQuestions.every(question => answers[question.id]?.trim());
+    const handleDevTools = () => {
+      setShowDevToolsWarning(true);
+      setTimeout(() => setShowDevToolsWarning(false), 3000);
     };
 
-    const handleSubmitAll = () => {
-        if (!isAllAnswered()) {
-            setAttempted(true);
-            return;
-        }
-        const newResults = {};
-        randomizedQuestions.forEach(question => {
-            const answer = answers[question.id] || '';
-            let isCorrect = false;
-            if (question.type === 'mcq') {
-                isCorrect = answer === question.correctAnswer;
-            } else {
-                isCorrect = calculateSimilarity(answer, question.correctAnswer) >= (question.similarityThreshold || 0.9);
-            }
-            (newResults as any)[question.id] = isCorrect;
-        });
-        setResults(newResults);
-        setShowResults(true);
+    const handleContextMenu = (e: Event) => {
+      e.preventDefault();
+      handleDevTools();
     };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        (e.ctrlKey &&
+          e.shiftKey &&
+          (e.key === "I" || e.key === "J" || e.key === "C")) ||
+        (e.metaKey && e.altKey && e.key === "I") ||
+        e.key === "F12"
+      ) {
+        e.preventDefault();
+        handleDevTools();
+      }
+    };
+
+    const handlePaste = (e: ClipboardEvent) => {
+      e.preventDefault();
+      setPasteCount((prev) => prev + 1);
+    };
+
+    const detectDevTools = () => {
+      if (
+        window.outerWidth - window.innerWidth > 160 ||
+        window.outerHeight - window.innerHeight > 160
+      ) {
+        handleDevTools();
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        setTabSwitchCount((prev) => prev + 2);
+        setShowTabSwitchWarning(true);
+        setTimeout(() => setShowTabSwitchWarning(false), 3000);
+      }
+    };
+
+    document.addEventListener("paste", handlePaste);
+    document.addEventListener("contextmenu", handleContextMenu);
+    document.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("resize", detectDevTools);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    setInterval(detectDevTools, 1000);
+
+    return () => {
+      document.removeEventListener("contextmenu", handleContextMenu);
+      document.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("resize", detectDevTools);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
+
+  const isAllAnswered = () => {
+    return randomizedQuestions.every((question) =>
+      answers[question.id]?.trim()
+    );
+  };
+
+  const handleSubmitAll = () => {
+    if (!isAllAnswered()) {
+      setAttempted(true);
+      return;
+    }
+    const newResults = {};
+    randomizedQuestions.forEach((question) => {
+      const answer = answers[question.id] || "";
+      let isCorrect = false;
+      if (question.type === "mcq") {
+        isCorrect = answer === question.correctAnswer;
+      } else {
+        isCorrect =
+          calculateSimilarity(answer, question.correctAnswer) >=
+          (question.similarityThreshold || 0.9);
+      }
+      (newResults as any)[question.id] = isCorrect;
+    });
+    setResults(newResults);
+    setShowResults(true);
+  };
 
     return isFullscreen ? (
         <div className='flex flex-col h-full max-w-screen-xl w-full pl-[20vw] px-24 py-16 overflow-auto'>
