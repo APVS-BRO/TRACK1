@@ -3,6 +3,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { questions } from '@/data/questions';
 import { calculateSimilarity } from '@/utils/similarity';
 import DisableDevtool from 'disable-devtool';
+import { Timer } from '@/components/Timer';
 
 export default function Page() {
     const [answers, setAnswers] = useState<{ [key: number]: string }>({});
@@ -13,14 +14,30 @@ export default function Page() {
     const [showDevToolsWarning, setShowDevToolsWarning] = useState(false);
     const [showTabSwitchWarning, setShowTabSwitchWarning] = useState(false);
     const [tabSwitchCount, setTabSwitchCount] = useState(0);
+    const [showVerificationWarning, setShowVerificationWarning] = useState(false);
 
     const handlePasteAttempt = useCallback(() => {
         setShowPasteWarning(true);
         setTimeout(() => setShowPasteWarning(false), 3000);
     }, []);
 
+    const handleVerificationFailed = useCallback(() => {
+        setShowVerificationWarning(true);
+        setTimeout(() => setShowVerificationWarning(false), 3000);
+    }, []);
+
     useEffect(() => {
-        DisableDevtool();
+        sessionStorage.setItem('tabSwitch', String(tabSwitchCount));
+    }, [tabSwitchCount]);
+
+    useEffect(() => {
+        const t = sessionStorage.getItem("tabSwitch")
+        if (t) setTabSwitchCount(t ? parseInt(t) : 0)
+    }, [])
+
+
+    useEffect(() => {
+        // DisableDevtool();
 
         const handleDevTools = () => {
             setShowDevToolsWarning(true);
@@ -98,6 +115,7 @@ export default function Page() {
 
     return (
         <div className='flex flex-col h-full max-w-screen-xl w-full pl-[20vw] px-24 py-16 overflow-auto'>
+            <Timer onVerificationFailed={handleVerificationFailed} />
             <h1 className='text-3xl font-semibold text-white'>Questions</h1>
             <div className='space-y-8 mt-6'>
                 {questions.map(question => (
@@ -149,6 +167,11 @@ export default function Page() {
                 ))}
             </div>
             <div className='fixed bottom-8 right-8 flex flex-col items-end gap-2'>
+                {showVerificationWarning && (
+                    <div className="bg-red-500/90 text-white px-4 py-2 rounded-xl font-medium animate-in slide-in-from-bottom-4">
+                        Warning: Verification check failed!
+                    </div>
+                )}
                 {showTabSwitchWarning && (
                     <div className="bg-red-500/90 text-white px-4 py-2 rounded-xl font-medium animate-in slide-in-from-bottom-4">
                         Warning: Do not switch tabs! ({tabSwitchCount} times detected)
