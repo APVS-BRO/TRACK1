@@ -16,7 +16,7 @@ export default function layout({ children }:
                 <div className='flex flex-col gap-2'>
                     <div className='flex items-center justify-center w-fit gap-2 mb-2'>
                         <Image src={authlogo} width={40} height={40} alt="auth_logo" className="w-[40px] h-[40px]" />
-                        <h1 className='text-xl font-semibold'>APVS</h1>
+                        <h1 className='text-xl font-semibold'>Proctor</h1>
                     </div>
                     <Link href='/instructions' className='flex items-center gap-2 rounded-lg font-medium hover:bg-white/20 px-4 py-2'>
                         <BsInfoCircleFill className='text-lg' /> Instructions

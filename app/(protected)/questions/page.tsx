@@ -4,8 +4,11 @@ import { questions } from '@/data/questions';
 import { calculateSimilarity } from '@/utils/similarity';
 import DisableDevtool from 'disable-devtool';
 import { Timer } from '@/components/Timer';
+import { logout } from '@/actions/logout';
+import { useRouter } from 'next/navigation';
 
 export default function Page() {
+    const router = useRouter()
     const [answers, setAnswers] = useState<{ [key: number]: string }>({});
     const [results, setResults] = useState<{ [key: number]: boolean }>({});
     const [showResults, setShowResults] = useState(false);
@@ -15,10 +18,26 @@ export default function Page() {
     const [showTabSwitchWarning, setShowTabSwitchWarning] = useState(false);
     const [tabSwitchCount, setTabSwitchCount] = useState(0);
     const [showVerificationWarning, setShowVerificationWarning] = useState(false);
+    const [randomizedQuestions, setRandomizedQuestions] = useState(questions);
+    const [mounted, setMounted] = useState(false);
+    const [pasteCount, setPasteCount] = useState(0);
 
     const handlePasteAttempt = useCallback(() => {
-        setShowPasteWarning(true);
-        setTimeout(() => setShowPasteWarning(false), 3000);
+        setPasteCount(prev => {
+            const newCount = prev + 1;
+            if (newCount >= 3) {
+                setShowPasteWarning(true);
+                setTimeout(() => {
+                    setShowPasteWarning(false);
+                    setPasteCount(0);
+                    setTabSwitchCount(prev => prev + 1);
+                }, 3000);
+                return 0;
+            }
+            setShowPasteWarning(true);
+            setTimeout(() => setShowPasteWarning(false), 3000);
+            return newCount;
+        });
     }, []);
 
     const handleVerificationFailed = useCallback(() => {
@@ -28,16 +47,22 @@ export default function Page() {
 
     useEffect(() => {
         sessionStorage.setItem('tabSwitch', String(tabSwitchCount));
+        if (tabSwitchCount >= 10) {
+            logout("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+            router.push("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+        }
     }, [tabSwitchCount]);
+
 
     useEffect(() => {
         const t = sessionStorage.getItem("tabSwitch")
         if (t) setTabSwitchCount(t ? parseInt(t) : 0)
-    }, [])
 
+        const shuffled = [...questions].sort(() => Math.random() - 0.5);
+        setRandomizedQuestions(shuffled);
 
-    useEffect(() => {
-        // DisableDevtool();
+        DisableDevtool();
+        setMounted(true);
 
         const handleDevTools = () => {
             setShowDevToolsWarning(true);
@@ -58,7 +83,15 @@ export default function Page() {
                 e.preventDefault();
                 handleDevTools();
             }
+
         };
+
+
+        const handlePaste = (e: ClipboardEvent) => {
+            e.preventDefault();
+            setPasteCount(prev => prev + 1);
+        };
+
 
         const detectDevTools = () => {
             if (window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160) {
@@ -68,12 +101,13 @@ export default function Page() {
 
         const handleVisibilityChange = () => {
             if (document.hidden) {
-                setTabSwitchCount(prev => prev + 1);
+                setTabSwitchCount(prev => prev + 2);
                 setShowTabSwitchWarning(true);
                 setTimeout(() => setShowTabSwitchWarning(false), 3000);
             }
         };
 
+        document.addEventListener('paste', handlePaste);
         document.addEventListener('contextmenu', handleContextMenu);
         document.addEventListener('keydown', handleKeyDown);
         window.addEventListener('resize', detectDevTools);
@@ -90,7 +124,7 @@ export default function Page() {
     }, []);
 
     const isAllAnswered = () => {
-        return questions.every(question => answers[question.id]?.trim());
+        return randomizedQuestions.every(question => answers[question.id]?.trim());
     };
 
     const handleSubmitAll = () => {
@@ -99,7 +133,7 @@ export default function Page() {
             return;
         }
         const newResults = {};
-        questions.forEach(question => {
+        randomizedQuestions.forEach(question => {
             const answer = answers[question.id] || '';
             let isCorrect = false;
             if (question.type === 'mcq') {
@@ -118,7 +152,7 @@ export default function Page() {
             <Timer onVerificationFailed={handleVerificationFailed} />
             <h1 className='text-3xl font-semibold text-white'>Questions</h1>
             <div className='space-y-8 mt-6'>
-                {questions.map(question => (
+                {mounted ? randomizedQuestions.map(question => (
                     <div key={question.id} className={`p-6 rounded-lg`}>
                         <p className='text-white mb-4 font-medium text-lg select-none'>{question.question}</p>
                         {question.type === 'mcq' ? (
@@ -164,7 +198,7 @@ export default function Page() {
                             </div>
                         )}
                     </div>
-                ))}
+                )) : null}
             </div>
             <div className='fixed bottom-8 right-8 flex flex-col items-end gap-2'>
                 {showVerificationWarning && (
@@ -174,7 +208,15 @@ export default function Page() {
                 )}
                 {showTabSwitchWarning && (
                     <div className="bg-red-500/90 text-white px-4 py-2 rounded-xl font-medium animate-in slide-in-from-bottom-4">
-                        Warning: Do not switch tabs! ({tabSwitchCount} times detected)
+                        Warning: Do not switch tabs! ({tabSwitchCount / 2} times detected)
+                    </div>
+                )}
+                {showPasteWarning && (
+                    <div className="bg-orange-500/90 text-white px-4 py-2 rounded-xl font-medium animate-in slide-in-from-bottom-4">
+                        {pasteCount == 0
+                            ? "Paste detected, Added warn!"
+                            : `Paste detected! Warning ${pasteCount == 0 ? 1 : pasteCount}/3`
+                        }
                     </div>
                 )}
                 <button
