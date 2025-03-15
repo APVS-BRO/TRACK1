@@ -11,6 +11,8 @@ export default function Page() {
     const [attempted, setAttempted] = useState(false);
     const [showPasteWarning, setShowPasteWarning] = useState(false);
     const [showDevToolsWarning, setShowDevToolsWarning] = useState(false);
+    const [showTabSwitchWarning, setShowTabSwitchWarning] = useState(false);
+    const [tabSwitchCount, setTabSwitchCount] = useState(0);
 
     const handlePasteAttempt = useCallback(() => {
         setShowPasteWarning(true);
@@ -47,9 +49,18 @@ export default function Page() {
             }
         };
 
+        const handleVisibilityChange = () => {
+            if (document.hidden) {
+                setTabSwitchCount(prev => prev + 1);
+                setShowTabSwitchWarning(true);
+                setTimeout(() => setShowTabSwitchWarning(false), 3000);
+            }
+        };
+
         document.addEventListener('contextmenu', handleContextMenu);
         document.addEventListener('keydown', handleKeyDown);
         window.addEventListener('resize', detectDevTools);
+        document.addEventListener('visibilitychange', handleVisibilityChange);
 
         setInterval(detectDevTools, 1000);
 
@@ -57,6 +68,7 @@ export default function Page() {
             document.removeEventListener('contextmenu', handleContextMenu);
             document.removeEventListener('keydown', handleKeyDown);
             window.removeEventListener('resize', detectDevTools);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
     }, []);
 
@@ -86,7 +98,6 @@ export default function Page() {
 
     return (
         <div className='flex flex-col h-full max-w-screen-xl w-full pl-[20vw] px-24 py-16 overflow-auto'>
-
             <h1 className='text-3xl font-semibold text-white'>Questions</h1>
             <div className='space-y-8 mt-6'>
                 {questions.map(question => (
@@ -134,34 +145,13 @@ export default function Page() {
                                 />
                             </div>
                         )}
-                        {showResults && (
-                            <div className={`mt-4 ${results[question.id] ? 'text-green-500' : 'text-red-500'} font-semibold`}>
-                                {results[question.id] ? '✓ Correct' : '✗ Incorrect'}
-                                {!results[question.id] && question.type === 'mcq' && (
-                                    <div className='text-gray-400 text-sm mt-1'>
-                                        Correct answer: {question.correctAnswer}
-                                    </div>
-                                )}
-                            </div>
-                        )}
                     </div>
                 ))}
             </div>
-
             <div className='fixed bottom-8 right-8 flex flex-col items-end gap-2'>
-                {attempted && !isAllAnswered() && (
-                    <div className="bg-orange-500/90 text-white px-4 py-2 rounded-xl font-medium animate-in slide-in-from-bottom-4">
-                        Please answer all questions
-                    </div>
-                )}
-                {showPasteWarning && (
+                {showTabSwitchWarning && (
                     <div className="bg-red-500/90 text-white px-4 py-2 rounded-xl font-medium animate-in slide-in-from-bottom-4">
-                        Pasting is not allowed!
-                    </div>
-                )}
-                {showDevToolsWarning && (
-                    <div className="bg-red-500/90 text-white px-4 py-2 rounded-xl font-medium animate-in slide-in-from-bottom-4">
-                        Developer tools are not allowed!
+                        Warning: Do not switch tabs! ({tabSwitchCount} times detected)
                     </div>
                 )}
                 <button
