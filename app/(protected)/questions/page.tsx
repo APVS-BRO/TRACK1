@@ -42,13 +42,36 @@ export default function Page() {
 
     const handleVerificationFailed = useCallback(() => {
         setShowVerificationWarning(true);
+        setTabSwitchCount(prev => prev + 3);
+        const shuffled = [...questions].sort(() => Math.random() - 0.5);
+        setRandomizedQuestions(shuffled);
         setTimeout(() => setShowVerificationWarning(false), 3000);
     }, []);
+
+    const [isFullscreen, setIsFullscreen] = useState(false);
+
+    useEffect(() => {
+        const handleFullscreenChange = () => {
+            setIsFullscreen(!!document.fullscreenElement);
+        };
+
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    }, []);
+
+    const enterFullscreen = async () => {
+        try {
+            await document.documentElement.requestFullscreen();
+        } catch (err) {
+            console.error('Error attempting to enable fullscreen:', err);
+        }
+    };
+
 
     useEffect(() => {
         sessionStorage.setItem('tabSwitch', String(tabSwitchCount));
         if (tabSwitchCount >= 10) {
-            logout("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+            // logout("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
             router.push("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
         }
     }, [tabSwitchCount]);
@@ -147,7 +170,7 @@ export default function Page() {
         setShowResults(true);
     };
 
-    return (
+    return isFullscreen ? (
         <div className='flex flex-col h-full max-w-screen-xl w-full pl-[20vw] px-24 py-16 overflow-auto'>
             <Timer onVerificationFailed={handleVerificationFailed} />
             <h1 className='text-3xl font-semibold text-white'>Questions</h1>
@@ -219,13 +242,34 @@ export default function Page() {
                         }
                     </div>
                 )}
-                <button
-                    onClick={handleSubmitAll}
-                    className={`text-[#1D2735] font-bold py-3 px-7 rounded-full transform transition-all duration-200 border-2 ${isAllAnswered() ? 'bg-white/90 hover:scale-105 border-transparent' : 'bg-white/20 backdrop-blur-lg text-white border-white cursor-not-allowed'}`}
-                >
-                    Submit All Answers
-                </button>
+                <div className='flex flex-row items-center justify-center gap-4'>
+                    <div className='bg-red-700 rounded-full aspect-square text-white font-semibold h-12 flex items-center justify-center w-12 text-xl'>{tabSwitchCount}</div>
+                    <button
+                        onClick={handleSubmitAll}
+                        className={`text-[#1D2735] font-bold py-3 px-7 rounded-full transform transition-all duration-200 border-2 ${isAllAnswered() ? 'bg-white/90 hover:scale-105 border-transparent' : 'bg-white/20 backdrop-blur-lg text-white border-white cursor-not-allowed'}`}
+                    >
+                        Submit All Answers
+                    </button>
+                </div>
             </div>
+        </div>
+    ) : (
+        <div className='flex flex-col h-full max-w-screen-xl items-center justify-center w-full pl-[20vw] px-24 gap-4 py-16 overflow-auto'>
+            <h1 className='text-2xl font-semibold text-white'>This quiz can only be attended in Full Screen mode.</h1>
+
+            <button
+                onClick={enterFullscreen}
+                className='bg-blue-400/20 text-white rounded-full px-5 py-2 font-medium'
+            >
+                Enter Fullscreen
+            </button>
+            <button
+                onClick={() => router.back()}
+                className='bg-white/10 text-white px-4 py-2 rounded-lg font-medium'
+            >
+                Go Back
+            </button>
+
         </div>
     );
 }
