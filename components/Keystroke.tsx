@@ -19,7 +19,7 @@ type KeystrokeMetrics = {
 
 type Analytics = {
   totalKeys: number;
-  humanConfidence: number; // Weighted confidence score for human typing
+  humanConfidence: number;
   anomalyCount: number;
   isHuman: boolean;
 };
@@ -32,6 +32,7 @@ export default function KeystrokeAnalytics({
   showResults,
   results,
   question,
+  setTabSwitchCount,
   answers,
   setAnswers,
   handlePasteAttempt,
@@ -40,6 +41,7 @@ export default function KeystrokeAnalytics({
   results: { [key: number]: boolean };
   question: Question;
   answers: Answers;
+  setTabSwitchCount: Dispatch<SetStateAction<number>>;
   setAnswers: Dispatch<SetStateAction<{ [key: number]: string }>>;
   handlePasteAttempt: () => void;
 }) {
@@ -50,6 +52,7 @@ export default function KeystrokeAnalytics({
     anomalyCount: 0,
     isHuman: true,
   });
+  let updated = useRef(false);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lastKeyUpTime = useRef<number>(0);
@@ -58,37 +61,37 @@ export default function KeystrokeAnalytics({
   const analyzeTypingPatterns = useCallback(() => {
     if (sequenceBuffer.current.length < 10) return;
 
-    // Extract relevant metrics
     const latencies = sequenceBuffer.current.map((m) => m.latency);
     const flightTimes = sequenceBuffer.current.map((m) => m.flightTime);
     const backspaceCount = sequenceBuffer.current.filter(
       (m) => m.key === "Backspace"
     ).length;
 
-    // Detect anomalies: Latency and flight time thresholds
     const anomalyCount = sequenceBuffer.current.filter(
       (m) =>
         m.latency < 20 ||
-        m.latency > 500 || // Latency anomalies
+        m.latency > 500 ||
         m.flightTime < 15 ||
-        m.flightTime > 1000 // Flight time anomalies
+        m.flightTime > 1000
     ).length;
 
-    // Scoring System for Confidence
-    let humanConfidence = 50; // Start with a neutral base
-    if (backspaceCount > 0) humanConfidence += 20; // Error corrections suggest human behavior
-    if (anomalyCount < 2) humanConfidence += 15; // Low anomalies suggest natural typing
-    if (calculateStdDeviation(latencies) > 25) humanConfidence += 10; // Variability is human-like
-    if (calculateStdDeviation(flightTimes) > 50) humanConfidence += 10; // Reflects natural patterns
+    let humanConfidence = 50;
+    if (backspaceCount > 0) humanConfidence += 20;
+    if (anomalyCount < 2) humanConfidence += 15;
+    if (calculateStdDeviation(latencies) > 25) humanConfidence += 10;
+    if (calculateStdDeviation(flightTimes) > 50) humanConfidence += 10;
 
-    // Final Decision
-    const isHuman = humanConfidence >= 70; // Confidence above 70% indicates human
+    const isHuman = humanConfidence >= 70;
     setAnalytics({
       totalKeys: metrics.length,
-      humanConfidence: Math.min(humanConfidence, 100), // Cap at 100%
+      humanConfidence: Math.min(humanConfidence, 100),
       anomalyCount,
       isHuman,
     });
+    if (!isHuman && !updated.current) {
+      updated.current = true;
+      setTabSwitchCount((prev) => prev + 1);
+    }
   }, [metrics]);
 
   const calculateStdDeviation = (data: number[]): number => {
@@ -113,7 +116,7 @@ export default function KeystrokeAnalytics({
       const flightTime =
         sequenceBuffer.current.length > 0
           ? now -
-            sequenceBuffer.current[sequenceBuffer.current.length - 1].keyUpTime
+          sequenceBuffer.current[sequenceBuffer.current.length - 1].keyUpTime
           : 0;
 
       const newMetric: KeystrokeMetrics = {
@@ -150,19 +153,19 @@ export default function KeystrokeAnalytics({
   return (
     <>
       <textarea
-        className={`${
-          showResults
-            ? results[question.id]
-              ? "border-green-500"
-              : "border-red-500"
-            : "border-transparent"
-        } border-2 w-full bg-gray-700 p-2 rounded-lg px-4 text-white`}
+        className={`${showResults
+          ? results[question.id]
+            ? "border-green-500"
+            : "border-red-500"
+          : "border-transparent"
+          } border-2 w-full bg-gray-700 p-2 rounded-lg px-4 text-white`}
         rows={4}
         disabled={showResults}
         value={answers[question.id] || ""}
         onChange={(e) =>
           setAnswers((prev) => ({ ...prev, [question.id]: e.target.value }))
         }
+        ref={textareaRef}
         onPaste={(e) => {
           e.preventDefault();
           handlePasteAttempt();

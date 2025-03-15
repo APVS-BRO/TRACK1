@@ -200,7 +200,7 @@ export default function Page() {
                         ) : (
                             <div>
                                 
-                                <KeystrokeAnalytics results={results} setAnswers={setAnswers} showResults={showResults} question={question} answers={answers} handlePasteAttempt={handlePasteAttempt}/>
+                                    <KeystrokeAnalytics setTabSwitchCount={setTabSwitchCount} results={results} setAnswers={setAnswers} showResults={showResults} question={question} answers={answers} handlePasteAttempt={handlePasteAttempt}/>
                             </div>
                         )}
                     </div>
